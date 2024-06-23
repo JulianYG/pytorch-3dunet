@@ -17,7 +17,7 @@ model:
   # apply element-wise nn.Sigmoid after the final 1x1 convolution, otherwise apply nn.Softmax (in this case softmax)
   final_sigmoid: false
   # if True applies the final normalization layer (sigmoid or softmax), otherwise the networks returns the output from the final convolution layer; use False for regression problems, e.g. de-noising
-  is_segmentation: true
+  is_segmentation: false
 # trainer configuration
 trainer:
   # path to the checkpoint directory

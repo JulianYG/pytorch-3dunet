@@ -1,7 +1,8 @@
+import torch
 import torch.nn as nn
 
 from pytorch3dunet.unet3d.buildingblocks import DoubleConv, ResNetBlock, ResNetBlockSE, \
-    create_decoders, create_encoders
+    create_decoders, create_encoders, MLP
 from pytorch3dunet.unet3d.utils import get_class, number_of_features_per_level
 
 
@@ -61,51 +62,73 @@ class AbstractUNet(nn.Module):
                                         layer_order, num_groups, pool_kernel_size, is3d)
 
         # create decoder path
-        self.decoders = create_decoders(f_maps, basic_module, conv_kernel_size, conv_padding,
-                                        layer_order, num_groups, upsample, dropout_prob,
-                                        is3d)
-
+        # self.decoders = create_decoders(f_maps, basic_module, conv_kernel_size, conv_padding,
+        #                                 layer_order, num_groups, upsample, dropout_prob,
+        #                                 is3d)
+        
         # in the last layer a 1×1 convolution reduces the number of output channels to the number of labels
         if is3d:
-            self.final_conv = nn.Conv3d(f_maps[0], out_channels, 1)
+            self.final_conv = nn.Conv3d(f_maps[-1], out_channels, 1)
         else:
-            self.final_conv = nn.Conv2d(f_maps[0], out_channels, 1)
+            self.final_conv = nn.Conv2d(f_maps[-1], out_channels, 1)
 
-        if is_segmentation:
-            # semantic segmentation problem
-            if final_sigmoid:
-                self.final_activation = nn.Sigmoid()
-            else:
-                self.final_activation = nn.Softmax(dim=1)
+        # if is_segmentation:
+        #     # semantic segmentation problem
+        #     if final_sigmoid:
+        #         self.final_activation = nn.Sigmoid()
+        #     else:
+        #         self.final_activation = nn.Softmax(dim=1)
+        # else:
+        #     # regression or classification problem
+        #     self.final_activation = None
+        if final_sigmoid:
+            self.final_activation = nn.Sigmoid()
         else:
-            # regression or classification problem
-            self.final_activation = None
+            self.final_activation = nn.Softmax(dim=1)
+
+        self.final_mlp = MLP(
+            23814, hidden_channels=[512,128,32,out_channels], dropout=0.4)
 
     def forward(self, x):
         # encoder part
-        encoders_features = []
+        # encoders_features = []
         for encoder in self.encoders:
             x = encoder(x)
             # reverse the encoder outputs to be aligned with the decoder
-            encoders_features.insert(0, x)
+            # encoders_features.insert(0, x)
 
+        # post encoder part 
+        x = self.final_conv(x)
+
+        """
         # remove the last encoder's output from the list
         # !!remember: it's the 1st in the list
         encoders_features = encoders_features[1:]
+        # print('size of encoder:', len(encoders_features))
+        # for f in encoders_features:
+        #     print(f.shape)
 
+        print('before decoding', x.shape)
+        # print('ok')
         # decoder part
         for decoder, encoder_features in zip(self.decoders, encoders_features):
             # pass the output from the corresponding encoder and the output
             # of the previous decoder
             x = decoder(encoder_features, x)
-
+        print('after decoding', x.shape)
         x = self.final_conv(x)
-
+        print('after final conv', x.shape)
         # apply final_activation (i.e. Sigmoid or Softmax) only during prediction.
         # During training the network outputs logits
         if not self.training and self.final_activation is not None:
             x = self.final_activation(x)
+        """
 
+        x = self.final_mlp(x.flatten())
+        x = torch.unsqueeze(x, dim=1)
+        x = torch.t(x)
+        if self.final_activation is not None:
+            x = self.final_activation(x)
         return x
 
 

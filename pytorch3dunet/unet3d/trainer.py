@@ -174,9 +174,8 @@ class UNetTrainer:
                         f'Epoch [{self.num_epochs}/{self.max_num_epochs - 1}]')
 
             input, target, weight = self._split_training_batch(t)
-
             output, loss = self._forward_pass(input, target, weight)
-
+        
             train_losses.update(loss.item(), self._batch_size(input))
 
             # compute gradients and update parameters
@@ -310,14 +309,12 @@ class UNetTrainer:
         else:
             # forward pass
             output = self.model(input)
-            # print()
 
         # compute the loss
         if weight is None:
             loss = self.loss_criterion(output, target)
         else:
             loss = self.loss_criterion(output, target, weight)
-
         return output, loss
 
     def _is_best_eval_score(self, eval_score):
