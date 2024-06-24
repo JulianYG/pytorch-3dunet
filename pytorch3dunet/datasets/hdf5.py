@@ -11,12 +11,13 @@ from pytorch3dunet.unet3d.utils import get_logger
 
 logger = get_logger('HDF5Dataset')
 _FEAUTRE_ID_MAP = {
-    'SEG': 0,
-    'HTM': 1,
-    'PIB': 2, 
-    'PIB_N': 3,
-    'FDG': 4, 
-    'FDG_N': 5
+    'FDG_CT': 0,
+    'PIB_CT': 1,
+    'HTM': 2, 
+    'FDG_PET': 3,
+    'FDG_PET_N': 4, 
+    'PIB_PET': 5,
+    'PIB_PET_N': 6
 }
 
 def _create_padded_indexes(indexes, halo_shape):
@@ -89,12 +90,12 @@ class AbstractHDF5Dataset(ConfigDataset):
             self.weight_map = None
 
             # compare patch and stride configuration
-            patch_shape = slice_builder_config.get('patch_shape')
-            stride_shape = slice_builder_config.get('stride_shape')
-            if sum(self.halo_shape) != 0 and patch_shape != stride_shape:
-                logger.warning(f'Found non-zero halo shape {self.halo_shape}. '
-                               f'In this case: patch shape and stride shape should be equal for optimal prediction '
-                               f'performance, but found patch_shape: {patch_shape} and stride_shape: {stride_shape}!')
+            # patch_shape = slice_builder_config.get('patch_shape')
+            # stride_shape = slice_builder_config.get('stride_shape')
+            # if sum(self.halo_shape) != 0 and patch_shape != stride_shape:
+            #     logger.warning(f'Found non-zero halo shape {self.halo_shape}. '
+            #                    f'In this case: patch shape and stride shape should be equal for optimal prediction '
+            #                    f'performance, but found patch_shape: {patch_shape} and stride_shape: {stride_shape}!')
 
         with h5py.File(file_path, 'r') as f:
             raw = f[raw_internal_path][:, self.feature_idx, :].transpose((0, 3, 2, 1))

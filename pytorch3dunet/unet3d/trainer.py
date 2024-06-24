@@ -10,7 +10,7 @@ from pytorch3dunet.unet3d.losses import get_loss_criterion
 from pytorch3dunet.unet3d.metrics import get_evaluation_metric
 from pytorch3dunet.unet3d.model import get_model, UNet2D
 from pytorch3dunet.unet3d.utils import get_logger, get_tensorboard_formatter, create_optimizer, \
-    create_lr_scheduler, get_number_of_learnable_parameters
+    create_lr_scheduler, get_number_of_learnable_parameters, ClassificationTensorboardFormatter
 from . import utils
 
 logger = get_logger('UNetTrainer')
@@ -123,6 +123,7 @@ class UNetTrainer:
 
         assert tensorboard_formatter is not None, 'TensorboardFormatter must be provided'
         self.tensorboard_formatter = tensorboard_formatter
+        self.label_tensorboard_formatter = ClassificationTensorboardFormatter()
 
         self.num_iterations = num_iterations
         self.num_epochs = num_epoch
@@ -383,16 +384,25 @@ class UNetTrainer:
             'predictions': prediction
         }
         img_sources = {}
+        text_label_sources = {}
         for name, batch in inputs_map.items():
-            if isinstance(batch, list) or isinstance(batch, tuple):
-                for i, b in enumerate(batch):
-                    img_sources[f'{name}{i}'] = b.data.cpu().numpy()
+            if name == 'inputs':
+                if isinstance(batch, list) or isinstance(batch, tuple):
+                    for i, b in enumerate(batch):
+                        img_sources[f'{name}{i}'] = b.data.cpu().numpy()
+                else:
+                    img_sources[name] = batch.data.cpu().numpy()
             else:
-                img_sources[name] = batch.data.cpu().numpy()
+                # For predictions and targets, the data is not image format
+                text_label_sources[name] = batch.data.cpu().numpy()
 
         for name, batch in img_sources.items():
             for tag, image in self.tensorboard_formatter(name, batch):
                 self.writer.add_image(prefix + tag, image, self.num_iterations)
+
+        for name, batch in text_label_sources.items():
+            for label in self.label_tensorboard_formatter(name, batch):
+                self.writer.add_text(label, prefix + label)
 
     @staticmethod
     def _batch_size(input):

@@ -65,7 +65,12 @@ class AbstractUNet(nn.Module):
         # self.decoders = create_decoders(f_maps, basic_module, conv_kernel_size, conv_padding,
         #                                 layer_order, num_groups, upsample, dropout_prob,
         #                                 is3d)
-        
+        # if is3d:
+        #     self.first_conv = nn.Conv3d(f_maps[-1], out_channels, 1)
+        # else:
+        #     self.first_conv = nn.Conv2d(f_maps[-1], out_channels, 1)
+
+
         # in the last layer a 1×1 convolution reduces the number of output channels to the number of labels
         if is3d:
             self.final_conv = nn.Conv3d(f_maps[-1], out_channels, 1)
@@ -87,7 +92,7 @@ class AbstractUNet(nn.Module):
             self.final_activation = nn.Softmax(dim=1)
 
         self.final_mlp = MLP(
-            23814, hidden_channels=[512,128,32,out_channels], dropout=0.4)
+            48384, hidden_channels=[512,128,32,out_channels], dropout=0.4)
 
     def forward(self, x):
         # encoder part
@@ -123,7 +128,6 @@ class AbstractUNet(nn.Module):
         if not self.training and self.final_activation is not None:
             x = self.final_activation(x)
         """
-
         x = self.final_mlp(x.flatten())
         x = torch.unsqueeze(x, dim=1)
         x = torch.t(x)

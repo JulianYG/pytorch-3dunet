@@ -48,7 +48,7 @@ class MeanIoU:
         :param target: 4D or 5D ground truth torch tensor. 4D (NxDxHxW) tensor will be expanded to 5D as one-hot
         :return: intersection over union averaged over all channels
         """
-        assert input.dim() == 5
+        assert input.dim() == 5 or input.dim() == 2
 
         n_classes = input.size()[1]
 

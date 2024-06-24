@@ -30,7 +30,7 @@ trainer:
   # how many iterations between validations
   validate_after_iters: 1000
   # how many iterations between tensorboard logging
-  log_after_iters: 500
+  log_after_iters: 10
   # max number of epochs
   max_num_epochs: 200
   # max number of iterations
@@ -81,15 +81,15 @@ loaders:
   train:
     # paths to the training datasets
     file_paths:
-      - /data/processed/train.hdf5
+      - /data/processed_new/train.hdf5
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
       name: FilterSliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [ 140, 160, 160 ]
-      # train stride between patches
-      stride_shape: [ 30, 40, 40 ]
+      # patch_shape: [ 140, 160, 160 ]
+      # # train stride between patches
+      # stride_shape: [ 30, 40, 40 ]
       # minimum volume of the labels in the patch
       threshold: 0.01
       # probability of accepting patches which do not fulfil the threshold criterion
@@ -132,15 +132,15 @@ loaders:
   val:
     # paths to the val datasets
     file_paths:
-      - /data/processed/validation.hdf5
+      - /data/processed_new/validation.hdf5
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
       name: FilterSliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [ 140, 160, 160 ]
-      # train stride between patches
-      stride_shape: [ 30, 40, 40 ]
+      # patch_shape: [ 140, 160, 160 ]
+      # # train stride between patches
+      # stride_shape: [ 30, 40, 40 ]
       # minimum volume of the labels in the patch
       threshold: 0.01
       # probability of accepting patches which do not fulfil the threshold criterion
