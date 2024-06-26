@@ -176,12 +176,12 @@ class UNetTrainer:
 
             input, target, weight = self._split_training_batch(t)
             output, loss = self._forward_pass(input, target, weight)
-        
             train_losses.update(loss.item(), self._batch_size(input))
 
             # compute gradients and update parameters
             self.optimizer.zero_grad()
             loss.backward()
+            nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
             self.optimizer.step()
 
             if self.num_iterations % self.validate_after_iters == 0:

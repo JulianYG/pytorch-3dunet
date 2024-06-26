@@ -5,6 +5,7 @@ from pytorch3dunet.unet3d.buildingblocks import DoubleConv, ResNetBlock, ResNetB
     create_decoders, create_encoders, MLP
 from pytorch3dunet.unet3d.utils import get_class, number_of_features_per_level
 
+_NUM_CLASSES = 3
 
 class AbstractUNet(nn.Module):
     """
@@ -43,7 +44,7 @@ class AbstractUNet(nn.Module):
         is3d (bool): if True the model is 3D, otherwise 2D, default: True
     """
 
-    def __init__(self, in_channels, out_channels, final_sigmoid, basic_module, f_maps=64, layer_order='gcr',
+    def __init__(self, in_channels, out_channels, final_sigmoid, basic_module, f_maps=64, layer_order='bcr',
                  num_groups=8, num_levels=4, is_segmentation=False, conv_kernel_size=3, pool_kernel_size=2,
                  conv_padding=1, conv_upscale=2, upsample='default', dropout_prob=0.1, is3d=True):
         super(AbstractUNet, self).__init__()
@@ -70,12 +71,11 @@ class AbstractUNet(nn.Module):
         # else:
         #     self.first_conv = nn.Conv2d(f_maps[-1], out_channels, 1)
 
-
         # in the last layer a 1×1 convolution reduces the number of output channels to the number of labels
         if is3d:
-            self.final_conv = nn.Conv3d(f_maps[-1], out_channels, 1)
+            self.conv_after_encoder = nn.Conv3d(f_maps[-1], out_channels, 1)
         else:
-            self.final_conv = nn.Conv2d(f_maps[-1], out_channels, 1)
+            self.conv_after_encoder = nn.Conv2d(f_maps[-1], out_channels, 1)
 
         # if is_segmentation:
         #     # semantic segmentation problem
@@ -86,13 +86,20 @@ class AbstractUNet(nn.Module):
         # else:
         #     # regression or classification problem
         #     self.final_activation = None
+
+        self.conv_activation = nn.ReLU(inplace=True)
+
         if final_sigmoid:
             self.final_activation = nn.Sigmoid()
         else:
             self.final_activation = nn.Softmax(dim=1)
 
+        self.final_pooling = nn.MaxPool3d(1, stride=2)
+
         self.final_mlp = MLP(
-            48384, hidden_channels=[512,128,32,out_channels], dropout=0.4)
+            out_channels * 12 * 14 * 12, hidden_channels=[512,128,32,_NUM_CLASSES], 
+            # norm_layer=nn.BatchNorm1d, 
+            dropout=0.4)
 
     def forward(self, x):
         # encoder part
@@ -103,8 +110,9 @@ class AbstractUNet(nn.Module):
             # encoders_features.insert(0, x)
 
         # post encoder part 
-        x = self.final_conv(x)
-
+        x = self.conv_after_encoder(x)
+        x = self.conv_activation(x)
+        x = self.final_pooling(x)
         """
         # remove the last encoder's output from the list
         # !!remember: it's the 1st in the list
@@ -121,16 +129,16 @@ class AbstractUNet(nn.Module):
             # of the previous decoder
             x = decoder(encoder_features, x)
         print('after decoding', x.shape)
-        x = self.final_conv(x)
+        x = self.conv_after_encoder(x)
         print('after final conv', x.shape)
         # apply final_activation (i.e. Sigmoid or Softmax) only during prediction.
         # During training the network outputs logits
         if not self.training and self.final_activation is not None:
             x = self.final_activation(x)
         """
-        x = self.final_mlp(x.flatten())
-        x = torch.unsqueeze(x, dim=1)
-        x = torch.t(x)
+        x = self.final_mlp(x.flatten(start_dim=1))
+        # x = torch.unsqueeze(x, dim=1)
+        # x = torch.t(x)
         if self.final_activation is not None:
             x = self.final_activation(x)
         return x
@@ -145,7 +153,7 @@ class UNet3D(AbstractUNet):
     Uses `DoubleConv` as a basic_module and nearest neighbor upsampling in the decoder
     """
 
-    def __init__(self, in_channels, out_channels, final_sigmoid=True, f_maps=64, layer_order='gcr',
+    def __init__(self, in_channels, out_channels, final_sigmoid=True, f_maps=64, layer_order='bcr',
                  num_groups=8, num_levels=4, is_segmentation=True, conv_padding=1,
                  conv_upscale=2, upsample='default', dropout_prob=0.1, **kwargs):
         super(UNet3D, self).__init__(in_channels=in_channels,

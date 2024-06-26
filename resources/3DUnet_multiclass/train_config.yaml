@@ -6,8 +6,7 @@ model:
   name: UNet3D
   # number of input channels to the model
   in_channels: 1
-  # number of classes
-  out_channels: 3
+  out_channels: 1
   # determines the order of operators in a single layer (gcr - GroupNorm+Conv3d+ReLU)
   layer_order: gcr
   # number of features at each level of the U-Net
@@ -28,9 +27,9 @@ trainer:
   # make sure to decrease the learning rate in the optimizer config accordingly
   pre_trained: null
   # how many iterations between validations
-  validate_after_iters: 1000
+  validate_after_iters: 500
   # how many iterations between tensorboard logging
-  log_after_iters: 10
+  log_after_iters: 5
   # max number of epochs
   max_num_epochs: 200
   # max number of iterations
@@ -44,19 +43,19 @@ loss:
 # optimizer configuration
 optimizer:
   # initial learning rate
-  learning_rate: 0.0002
+  learning_rate: 0.00003
   # weight decay
-  weight_decay: 0.00001
+  weight_decay: 0.01
 # evaluation metric
 eval_metric:
   # use average precision metric
-  name: MeanIoU
+  name: MSE # AUC
 # learning rate scheduler configuration
 lr_scheduler:
   # reduce learning rate when evaluation metric plateaus
   name: ReduceLROnPlateau
   # use 'max' if eval_score_higher_is_better=True, 'min' otherwise
-  mode: max
+  mode: min
   # factor by which learning rate will be reduced
   factor: 0.2
   # number of *validation runs* with no improvement after which learning rate will be reduced
@@ -67,9 +66,9 @@ loaders:
   # class of the HDF5 dataset, currently StandardHDF5Dataset and LazyHDF5Dataset are supported.
   dataset: StandardHDF5Dataset
   # batch dimension; if number of GPUs is N > 1, then a batch_size of N * batch_size will automatically be taken for DataParallel
-  batch_size: 1
+  batch_size: 2
   # how many subprocesses to use for data loading
-  num_workers: 8
+  num_workers: 16
   # path to the raw data within the H5
   raw_internal_path: raw
   # path to the label data within the H5
@@ -81,7 +80,7 @@ loaders:
   train:
     # paths to the training datasets
     file_paths:
-      - /data/processed_new/train.hdf5
+      - /data/processed/train.hdf5
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
@@ -132,7 +131,7 @@ loaders:
   val:
     # paths to the val datasets
     file_paths:
-      - /data/processed_new/validation.hdf5
+      - /data/processed/validation.hdf5
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
