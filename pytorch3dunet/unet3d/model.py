@@ -94,12 +94,15 @@ class AbstractUNet(nn.Module):
         else:
             self.final_activation = nn.Softmax(dim=1)
 
-        self.final_pooling = nn.MaxPool3d(1, stride=2)
+        # self.final_pooling = nn.MaxPool3d(1, stride=1)
 
         self.final_mlp = MLP(
-            out_channels * 12 * 14 * 12, hidden_channels=[512,128,32,_NUM_CLASSES], 
+            out_channels * 24 * 28 * 24, hidden_channels=[1024,256,128], 
             # norm_layer=nn.BatchNorm1d, 
-            dropout=0.4)
+            dropout=0.2)
+        
+        self.final_fc = nn.Linear(128, _NUM_CLASSES)
+        # self.parameters()
 
     def forward(self, x):
         # encoder part
@@ -112,7 +115,7 @@ class AbstractUNet(nn.Module):
         # post encoder part 
         x = self.conv_after_encoder(x)
         x = self.conv_activation(x)
-        x = self.final_pooling(x)
+        # x = self.final_pooling(x)
         """
         # remove the last encoder's output from the list
         # !!remember: it's the 1st in the list
@@ -139,6 +142,7 @@ class AbstractUNet(nn.Module):
         x = self.final_mlp(x.flatten(start_dim=1))
         # x = torch.unsqueeze(x, dim=1)
         # x = torch.t(x)
+        x = self.final_fc(x)
         if self.final_activation is not None:
             x = self.final_activation(x)
         return x

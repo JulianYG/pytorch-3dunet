@@ -181,7 +181,7 @@ class UNetTrainer:
             # compute gradients and update parameters
             self.optimizer.zero_grad()
             loss.backward()
-            nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+            # nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
             self.optimizer.step()
 
             if self.num_iterations % self.validate_after_iters == 0:

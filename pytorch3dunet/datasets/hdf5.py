@@ -69,7 +69,7 @@ class AbstractHDF5Dataset(ConfigDataset):
         if global_normalization:
             logger.info('Calculating mean and std of the raw data...')
             with h5py.File(file_path, 'r') as f:
-                raw = f[raw_internal_path][:, self.feature_idx, :].transpose((0, 3, 2, 1))
+                raw = f[raw_internal_path][:, self.feature_idx, :].transpose((0, 2, 3, 1))
                 stats = calculate_stats(raw)
         else:
             stats = calculate_stats(None, True)
@@ -98,7 +98,7 @@ class AbstractHDF5Dataset(ConfigDataset):
             #                    f'performance, but found patch_shape: {patch_shape} and stride_shape: {stride_shape}!')
 
         with h5py.File(file_path, 'r') as f:
-            raw = f[raw_internal_path][:, self.feature_idx, :].transpose((0, 3, 2, 1))
+            raw = f[raw_internal_path][:, self.feature_idx, :].transpose((0, 2, 3, 1))
             self.label = f[label_internal_path][:] if phase != 'test' else None
             weight_map = f[weight_internal_path] if weight_internal_path is not None else None
             # build slice indices for raw and label data sets
@@ -135,7 +135,7 @@ class AbstractHDF5Dataset(ConfigDataset):
 
     def volume_shape(self):
         with h5py.File(self.file_path, 'r') as f:
-            raw = f[self.raw_internal_path][:, self.feature_idx, :].transpose((0, 3, 2, 1))
+            raw = f[self.raw_internal_path][:, self.feature_idx, :].transpose((0, 2, 3, 1))
             if raw.ndim == 3:
                 return raw.shape
             else:
@@ -183,7 +183,7 @@ class AbstractHDF5Dataset(ConfigDataset):
             return volume.shape[1:]
 
         with h5py.File(self.file_path, 'r') as f:
-            raw = f[self.raw_internal_path][:, self.feature_idx, :].transpose((0, 3, 2, 1))
+            raw = f[self.raw_internal_path][:, self.feature_idx, :].transpose((0, 2, 3, 1))
             label = f[self.label_internal_path][:]
             assert raw.ndim in [3, 4], 'Raw dataset must be 3D (DxHxW) or 4D (CxDxHxW)'
             assert label.ndim in [2, 3, 4], 'Label dataset must be 1D (classification) or 3D (DxHxW) or 4D (CxDxHxW)'
@@ -252,7 +252,7 @@ class StandardHDF5Dataset(AbstractHDF5Dataset):
             with h5py.File(self.file_path, 'r') as f:
                 assert self.raw_internal_path in f, f'Dataset {self.raw_internal_path} not found in {self.file_path}'
                 self._raw = f[self.raw_internal_path][idx, self.feature_idx, :]
-        return self._raw.transpose((2,1,0))
+        return self._raw.transpose((1,2,0))
 
     # def get_label_patch(self, idx):
     #     if self._label is None:
@@ -292,7 +292,7 @@ class LazyHDF5Dataset(AbstractHDF5Dataset):
 
     def get_raw_patch(self, idx):
         with h5py.File(self.file_path, 'r') as f:
-            return f[self.raw_internal_path][idx, self.feature_idx, :].transpose((2,1,0))
+            return f[self.raw_internal_path][idx, self.feature_idx, :].transpose((1,2,0))
 
     # def get_label_patch(self, idx):
     #     with h5py.File(self.file_path, 'r') as f:
@@ -307,7 +307,7 @@ class LazyHDF5Dataset(AbstractHDF5Dataset):
             if 'raw_padded' in f:
                 return f['raw_padded'][idx]
 
-            raw = f[self.raw_internal_path][idx, self.feature_idx, :].transpose((2,1,0))
+            raw = f[self.raw_internal_path][idx, self.feature_idx, :].transpose((1,2,0))
             raw_padded = mirror_pad(raw, self.halo_shape)
             f.create_dataset('raw_padded', data=raw_padded, compression='gzip')
             return raw_padded
