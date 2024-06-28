@@ -89,20 +89,18 @@ class AbstractUNet(nn.Module):
 
         self.conv_activation = nn.ReLU(inplace=True)
 
-        if final_sigmoid:
-            self.final_activation = nn.Sigmoid()
-        else:
-            self.final_activation = nn.Softmax(dim=1)
-
         # self.final_pooling = nn.MaxPool3d(1, stride=1)
-
         self.final_mlp = MLP(
             out_channels * 24 * 28 * 24, hidden_channels=[1024,256,128], 
             # norm_layer=nn.BatchNorm1d, 
             dropout=0.2)
         
         self.final_fc = nn.Linear(128, _NUM_CLASSES)
-        # self.parameters()
+
+        if final_sigmoid:
+            self.final_activation = nn.Sigmoid()
+        else:
+            self.final_activation = nn.Softmax(dim=1)
 
     def forward(self, x):
         # encoder part
@@ -143,8 +141,8 @@ class AbstractUNet(nn.Module):
         # x = torch.unsqueeze(x, dim=1)
         # x = torch.t(x)
         x = self.final_fc(x)
-        if self.final_activation is not None:
-            x = self.final_activation(x)
+        # if self.final_activation is not None:
+        x = self.final_activation(x)
         return x
 
 
