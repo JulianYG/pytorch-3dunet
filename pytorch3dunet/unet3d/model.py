@@ -1,8 +1,7 @@
-import torch
 import torch.nn as nn
 
 from pytorch3dunet.unet3d.buildingblocks import DoubleConv, ResNetBlock, ResNetBlockSE, \
-    create_decoders, create_encoders, MLP
+    create_encoders, MLP
 from pytorch3dunet.unet3d.utils import get_class, number_of_features_per_level
 
 _NUM_CLASSES = 3

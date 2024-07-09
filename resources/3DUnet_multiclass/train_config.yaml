@@ -29,13 +29,13 @@ trainer:
   # how many iterations between validations
   validate_after_iters: 500
   # how many iterations between tensorboard logging
-  log_after_iters: 10
+  log_after_iters: 200
   # max number of epochs
-  max_num_epochs: 500
+  max_num_epochs: 1500
   # max number of iterations
-  max_num_iterations: 60000
+  max_num_iterations: 100000
   # model with higher eval score is considered better
-  eval_score_higher_is_better: False
+  eval_score_higher_is_better: True
 # loss function configuration
 loss:
   # use BCE loss for training
@@ -49,13 +49,13 @@ optimizer:
 # evaluation metric
 eval_metric:
   # use average precision metric
-  name: MSE # AUC
+  name: ACC
 # learning rate scheduler configuration
 lr_scheduler:
   # reduce learning rate when evaluation metric plateaus
   name: ReduceLROnPlateau
   # use 'max' if eval_score_higher_is_better=True, 'min' otherwise
-  mode: min
+  mode: max
   # factor by which learning rate will be reduced
   factor: 0.2
   # number of *validation runs* with no improvement after which learning rate will be reduced
@@ -75,7 +75,7 @@ loaders:
   label_internal_path: label
   # path to the pixel-wise weight map withing the H5 if present
   weight_internal_path: null
-  feature_key: HTM
+  feature_key: FDG_PET
   # configuration of the train loader
   train:
     # paths to the training datasets
