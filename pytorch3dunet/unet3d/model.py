@@ -97,11 +97,6 @@ class AbstractUNet(nn.Module):
         
         self.final_fc = nn.Linear(128, _NUM_CLASSES)
 
-        if final_sigmoid:
-            self.final_activation = nn.Sigmoid()
-        else:
-            self.final_activation = nn.Softmax(dim=1)
-
     def forward(self, x):
         # encoder part
         # encoders_features = []
