@@ -6,6 +6,8 @@ import torchvision.models as models
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange, Reduce
 
+from pytorch3dunet.unet3d.buildingblocks import ClassificationHead
+
 import pdb
 
 _NUM_CLASSES = 3
@@ -257,22 +259,6 @@ class TransformerEncoder(nn.Sequential):
     def __init__(self, depth: int = 8, **kwargs):
         super().__init__(*[TransformerEncoderBlock(**kwargs) for _ in range(depth)])
 
-
-class ClassificationHead(nn.Module):
-   '''
-   A linear classifier is used to classify the encoded input based on the MLP 
-   head: ZKcls ∈ R(d). There are two final categorization classes: NC and AD.
-   The first token (cls_token) from the sequence is used for classification.
-   '''
-   def __init__(self, emb_size: int = 256, n_classes: int = 2):
-       super().__init__()
-       self.linear = nn.Linear(emb_size, n_classes)
-       
-   def forward(self, x):
-       # As x is of shape [batch_size, num_tokens, emb_size]
-       # and the cls_token is the first token in the sequence
-       cls_token = x[:, 0]
-       return self.linear(cls_token)
 
 class M3T(nn.Module):
     def __init__(self,

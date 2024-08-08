@@ -1,9 +1,9 @@
 # path to the checkpoint file containing the model
-model_path: /model/ckpt/htm_last.pytorch
+model_path: /model/ckpt/htm_resnet.pytorch
 # model configuration
 model:
   # model class
-  name: ResidualUNet3D
+  name: ResNet3D  # ResidualUNet3D
   # number of input channels to the model
   in_channels: 1
   # number of classes
