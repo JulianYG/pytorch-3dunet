@@ -17,3 +17,4 @@ dependencies:
   - pytest
   - scikit-learn
   - fvcore
+  - nibabel

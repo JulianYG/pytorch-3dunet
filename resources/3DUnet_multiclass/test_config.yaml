@@ -1,5 +1,5 @@
 # path to the checkpoint file containing the model
-model_path: /model/ckpt/htm_resnet.pytorch
+model_path: /model/ckpt/htm_resnet3d.pytorch
 # model configuration
 model:
   # model class
@@ -31,7 +31,7 @@ loaders:
   # path to the raw data within the H5
   raw_internal_path: raw
   # how many subprocesses to use for data loading
-  feature_key: HTM
+  feature_key: [FDG_PET_N, PIB_PET_N]
   num_workers: 16
   # test loaders configuration
   test:

@@ -45,7 +45,7 @@ loss:
 optimizer:
   name: Adamax # SGD
   # initial learning rate
-  learning_rate: 0.0001 # 0.001
+  learning_rate: 0.001
   # weight decay
   # weight_decay: 0.01
 # evaluation metric
@@ -68,16 +68,16 @@ loaders:
   # class of the HDF5 dataset, currently StandardHDF5Dataset and LazyHDF5Dataset are supported.
   dataset: StandardHDF5Dataset
   # batch dimension; if number of GPUs is N > 1, then a batch_size of N * batch_size will automatically be taken for DataParallel
-  batch_size: 2
+  batch_size: 3
   # how many subprocesses to use for data loading
-  num_workers: 16
+  num_workers: 8
   # path to the raw data within the H5
   raw_internal_path: raw
   # path to the label data within the H5
   label_internal_path: label
   # path to the pixel-wise weight map withing the H5 if present
   weight_internal_path: null
-  feature_key: HTM
+  feature_key: [FDG_PET_N, PIB_PET_N]
   # configuration of the train loader
   train:
     # paths to the training datasets
@@ -101,7 +101,7 @@ loaders:
         # Z-norm to standardize: subtract mean and divide by std dev
         # - name: ZNorm
         # Minmax to standardize: subtract min and divide by (max - min)
-        - name: Normalize
+        # - name: Normalize
         # randomly flips the volume in one of the axis
         # - name: RandomFlip
         # randomly rotates the volume with 90 deg across a randomly chosen plane
