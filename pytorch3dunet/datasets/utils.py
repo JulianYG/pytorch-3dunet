@@ -270,6 +270,7 @@ def get_test_loaders(config):
             collate_fn = default_prediction_collate
 
         yield DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, pin_memory=True,
+                         shuffle=False, drop_last=True, 
                         #  collate_fn=collate_fn
                          )
 

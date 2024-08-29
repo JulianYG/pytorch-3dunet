@@ -132,7 +132,7 @@ class AbstractUNet(nn.Module):
         # x = torch.unsqueeze(x, dim=1)
         # x = torch.t(x)
         x = self.final_fc(x)
-        if self.final_activation is not None:
+        if not self.training and self.final_activation is not None:
             x = self.final_activation(x)
         return x
 

@@ -18,15 +18,18 @@ class ResNet3D(nn.Module):
                 emb_size: int = 2048,
                 depth: int = 8,
                 n_classes: int = _NUM_CLASSES,
+                # finetune: bool = False,
                 **kwargs):
         super().__init__()
         raw_mask = np.expand_dims(
             np.array(nib.load('/data/seg.nii').dataobj, dtype=np.float32), axis=0).transpose((0, 2, 3, 1))
         self.batched_mask = np.expand_dims(raw_mask, axis=0)
         # self.segment_mask = torch.from_numpy(batched_mask).to('cuda')
-        resnet_model = torch.hub.load('facebookresearch/pytorchvideo', 'slow_r50', pretrained=True)
-        for param in resnet_model.parameters():
-            param.requires_grad = False     # freeze resnet weights  
+        resnet_model = torch.hub.load('/root/.cache/torch/hub/facebookresearch_pytorchvideo_main', 'slow_r50', source='local', pretrained=False)
+        state_dict = torch.load("/model/resnet_slow_50.pth")
+        resnet_model.load_state_dict(state_dict["model_state"])
+        # for param in resnet_model.parameters():
+        #     param.requires_grad = False     # freeze resnet weights  
 
         # modify stem layers
         stem_conv = nn.Conv3d(
@@ -40,7 +43,7 @@ class ResNet3D(nn.Module):
         # stem_conv.stride = (2, 2, 2)
         # stem_conv.padding = (3, 3, 3)
 
-        stem_pool = nn.MaxPool3d((3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1))
+        stem_pool = nn.AvgPool3d((3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1))
         resnet_model.blocks[0].pool = stem_pool
         # stem_pool = resnet_model.blocks[0].pool
         # stem_pool.kernel_size = (3, 3, 3)
@@ -59,11 +62,13 @@ class ResNet3D(nn.Module):
         
         self.r3d = resnet_model
         self.final_mlp = MLP(
-            104448, hidden_channels=[1024,256,128], 
+            104448, hidden_channels=[1024,256,64], 
+            activation_layer=nn.LeakyReLU,
             # norm_layer=nn.BatchNorm1d, 
-            dropout=0.2)
-        
-        self.final_fc = nn.Linear(128, _NUM_CLASSES)
+            # dropout=0.4,
+        )
+        self.relu = nn.ReLU()
+        self.final_fc = nn.Linear(64, _NUM_CLASSES, bias=False)
         # self.fc = ClassificationHead(emb_size, n_classes)
         self.final_activation = nn.Softmax(dim=1)
 
@@ -78,7 +83,8 @@ class ResNet3D(nn.Module):
         # x = self.r3d(x.repeat(1, 3, 1, 1, 1))
         x = self.r3d(x)
         x = self.final_mlp(x)
-        return self.final_fc(x)
-
-
-
+        x = self.relu(x)
+        x = self.final_fc(x)
+        if not self.training:
+            x = self.final_activation(x)
+        return x

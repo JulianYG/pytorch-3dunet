@@ -66,9 +66,7 @@ class AbstractHDF5Dataset(ConfigDataset):
         self.label_internal_path = label_internal_path
         self.weight_internal_path = weight_internal_path
         self.halo_shape = slice_builder_config.get('halo_shape', [0, 0, 0])
-        # import pdb
         with h5py.File(file_path, 'r') as f:
-            # pdb.set_trace()
             raw = np.array(f[raw_internal_path][:])
             self.data = raw[:, self.feature_idx, :].transpose((0, 1, 3, 4, 2))
 
@@ -94,6 +92,7 @@ class AbstractHDF5Dataset(ConfigDataset):
         else:
             stats = calculate_stats(None, True)
 
+        print(stats)
         self.transformer = transforms.Transformer(transformer_config, stats)
         self.raw_transform = self.transformer.raw_transform()
 

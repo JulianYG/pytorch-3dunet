@@ -280,4 +280,7 @@ class M3T(nn.Module):
         self.final_activation = nn.Softmax(dim=1)
 
     def forward(self, x):
-        return self.net(x)
+        x = self.net(x)
+        if not self.training:
+            x = self.final_activation(x)
+        return x
