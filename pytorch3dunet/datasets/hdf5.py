@@ -56,7 +56,7 @@ class AbstractHDF5Dataset(ConfigDataset):
     """
 
     def __init__(self, file_path, phase, slice_builder_config, transformer_config, feature_key, raw_internal_path='raw',
-                 label_internal_path='label', weight_internal_path=None, global_normalization=True):
+                 label_internal_path='label', weight_internal_path=None, global_normalization=True, split_channel_normalization=True):
         assert phase in ['train', 'val', 'test']
 
         self.phase = phase
@@ -87,12 +87,11 @@ class AbstractHDF5Dataset(ConfigDataset):
         if global_normalization:
             logger.info('Calculating mean and std of the raw data...')
             with h5py.File(file_path, 'r') as f:
-                # pdb.set_trace()
-                stats = calculate_stats(self.data)
+                stats = calculate_stats(self.data, split_channel=split_channel_normalization)
+                print('global norm stats:', stats)
         else:
             stats = calculate_stats(None, True)
 
-        print(stats)
         self.transformer = transforms.Transformer(transformer_config, stats)
         self.raw_transform = self.transformer.raw_transform()
 

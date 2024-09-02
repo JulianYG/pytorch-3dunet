@@ -528,21 +528,24 @@ class PercentileNormalizer:
         self.eps = eps
         self.pmin = pmin
         self.pmax = pmax
+        self.kwargs = kwargs
         self.channelwise = channelwise
 
     def __call__(self, m):
         if self.channelwise:
-            axes = list(range(m.ndim))
-            # average across channels
-            axes = tuple(axes[1:])
-            pmin = np.percentile(m, self.pmin, axis=axes, keepdims=True)
-            pmax = np.percentile(m, self.pmax, axis=axes, keepdims=True)
+            # if pmin is None or pmax is None:
+            #     axes = list(range(m.ndim))
+            #     # average across channels
+            #     axes = tuple(axes[1:])
+            #     # m is C x D x H x W
+            #     pmin = np.percentile(m, self.pmin, axis=axes, keepdims=True)
+            #     pmax = np.percentile(m, self.pmax, axis=axes, keepdims=True)
+            pmin = self.pmin[:, None, None, None]
+            pmax = self.pmax[:, None, None, None]
         else:
             pmin = np.percentile(m, self.pmin)
             pmax = np.percentile(m, self.pmax)
-
         return (m - pmin) / (pmax - pmin + self.eps)
-
 
 class Normalize:
     """
@@ -569,10 +572,8 @@ class Normalize:
             axes = tuple(axes[1:])
             if self.min_value is None or 'None' in self.min_value:
                 min_value = np.min(m, axis=axes, keepdims=True)
-
             if self.max_value is None or 'None' in self.max_value:
                 max_value = np.max(m, axis=axes, keepdims=True)
-
             # check if non None in self.min_value/self.max_value
             # if present and if so copy value to min_value
             if self.min_value is not None:

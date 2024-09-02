@@ -292,7 +292,7 @@ class Encoder(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, conv_kernel_size=3, apply_pooling=True,
-                 pool_kernel_size=2, pool_type='max', basic_module=DoubleConv, conv_layer_order='gcr',
+                 pool_kernel_size=2, pool_type='avg', basic_module=DoubleConv, conv_layer_order='gcr',
                  num_groups=8, padding=1, upscale=2, dropout_prob=0.1, is3d=True):
         super(Encoder, self).__init__()
         assert pool_type in ['max', 'avg']

@@ -270,7 +270,7 @@ def get_test_loaders(config):
             collate_fn = default_prediction_collate
 
         yield DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, pin_memory=True,
-                         shuffle=False, drop_last=True, 
+                         shuffle=False, # drop_last=True, 
                         #  collate_fn=collate_fn
                          )
 
@@ -291,7 +291,7 @@ def default_prediction_collate(batch):
     raise TypeError((error_msg.format(type(batch[0]))))
 
 
-def calculate_stats(img: np.array, skip: bool = False) -> dict[str, Any]:
+def calculate_stats(img: np.array, skip: bool = False, split_channel: bool = False) -> dict[str, Any]:
     """
     Calculates the minimum percentile, maximum percentile, mean, and standard deviation of the image.
 
@@ -302,20 +302,28 @@ def calculate_stats(img: np.array, skip: bool = False) -> dict[str, Any]:
     Returns:
         tuple[float, float, float, float]: The minimum percentile, maximum percentile, mean, and std dev
     """
-    if not skip:
-        min_v, max_v, pmin, pmax, mean, std = np.min(img), np.max(img), np.percentile(img, 1), np.percentile(img, 99.6), np.mean(img), np.std(img)
+    if skip: 
+        return {}
+    
+    if split_channel:
+        # Assuming input shape is N x C x D x H x W
+        return {
+            'minv': np.min(img, axis=(0, 2, 3, 4)),
+            'maxv': np.max(img, axis=(0, 2, 3, 4)),
+            'pmin': np.percentile(img, 1, axis=(0, 2, 3, 4)),
+            'pmax': np.percentile(img, 99.6, axis=(0, 2, 3, 4)),
+            'mean': np.mean(img, axis=(0, 2, 3, 4)),
+            'std': np.std(img, axis=(0, 2, 3, 4)),
+        }
     else:
-        min_v, max_v, pmin, pmax, mean, std = None, None, None, None, None, None
-
-    return {
-        'minv': min_v,
-        'maxv': max_v,
-        'pmin': pmin,
-        'pmax': pmax,
-        'mean': mean,
-        'std': std
-    }
-
+        return {
+            'minv': np.min(img),
+            'maxv': np.max(img),
+            'pmin': np.percentile(img, 1),
+            'pmax': np.percentile(img, 99.6),
+            'mean': np.mean(img),
+            'std': np.std(img),
+        }
 
 def mirror_pad(image, padding_shape):
     """

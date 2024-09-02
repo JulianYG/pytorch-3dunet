@@ -1,15 +1,15 @@
 # path to the checkpoint file containing the model
-model_path: /model/ckpt/best_checkpoint.pytorch  # fdg_pib_finetune_w_dropout.pytorch # /model/ckpt/fdg_pib_frozen_resnet.pytorch
+model_path: /model/ckpt/fdg_pib_res3dunet_wo_norm.pytorch  # fdg_pib_finetune_w_dropout.pytorch # /model/ckpt/fdg_pib_frozen_resnet.pytorch
 # model configuration
 model:
   # model class
-  name: ResNet3D  # ResidualUNet3D
+  name: ResidualUNet3D # UNet3D # M3T
   # number of input channels to the model
-  in_channels: 1
+  in_channels: 2
   # number of classes
   out_channels: 16
   # determines the order of operators in a single layer (gcr - GroupNorm+Conv3d+ReLU)
-  layer_order: bcr
+  layer_order: gcr
   # feature maps scale factor
   f_maps: [ 32, 64, 128, 256 ]
   # number of groups in the groupnorm
@@ -27,7 +27,7 @@ predictor:
 # specify the test datasets
 loaders:
   # batch dimension; if number of GPUs is N > 1, then a batch_size of N * batch_size will automatically be taken for DataParallel
-  batch_size: 4
+  batch_size: 3
   # path to the raw data within the H5
   raw_internal_path: raw
   global_normalization: true
@@ -39,7 +39,7 @@ loaders:
     # paths to the test datasets; if a given path is a directory all H5 files ('*.h5', '*.hdf', '*.hdf5', '*.hd5')
     # inside this directory will be included as well (non-recursively)
     file_paths:
-      - /data/processed/train.hdf5
+      - /data/processed/validation.hdf5
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
@@ -54,6 +54,7 @@ loaders:
 
     transformer:
       raw:
-        # - name: Normalize
+        # - name: PercentileNormalizer
+        #   channelwise: true
         - name: ToTensor
           expand_dims: true

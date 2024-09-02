@@ -85,6 +85,6 @@ class ResNet3D(nn.Module):
         x = self.final_mlp(x)
         x = self.relu(x)
         x = self.final_fc(x)
-        if not self.training:
-            x = self.final_activation(x)
+        # if not self.training:
+        x = self.final_activation(x)
         return x
