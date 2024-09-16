@@ -110,7 +110,7 @@ class StandardPredictor(_AbstractPredictor):
 
             # Sets the module in evaluation mode explicitly
             # It is necessary for batchnorm/dropout layers if present as well as final Sigmoid/Softmax to be applied
-            # self.model.eval()
+            self.model.eval()
             # Run predictions on the entire input dataset
             with torch.no_grad():
                 for input, ground_truth in tqdm(test_loader):                  

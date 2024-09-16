@@ -12,7 +12,8 @@ model:
   # number of features at each level of the U-Net
   f_maps: [ 32, 64, 128, 256 ]
   # number of groups in the groupnorm
-  # num_groups: 8
+  num_groups: 8
+  dropout_prob: 0.3
   # apply element-wise nn.Sigmoid after the final 1x1 convolution, otherwise apply nn.Softmax (in this case softmax)
   final_sigmoid: false
   # if True applies the final normalization layer (sigmoid or softmax), otherwise the networks returns the output from the final convolution layer; use False for regression problems, e.g. de-noising
@@ -45,7 +46,7 @@ loss:
 optimizer:
   name: Adamax # SGD
   # initial learning rate
-  learning_rate: 0.005
+  learning_rate: 0.003
   # weight decay
   weight_decay: 0.002
 # evaluation metric
@@ -102,8 +103,8 @@ loaders:
         # Z-norm to standardize: subtract mean and divide by std dev
         # - name: ZNorm
         # Minmax to standardize: subtract min and divide by (max - min)
-        # - name: PercentileNormalizer
-        #   channelwise: true
+        - name: PercentileNormalizer
+          channelwise: true
         # randomly flips the volume in one of the axis
         # - name: RandomFlip
         # randomly rotates the volume with 90 deg across a randomly chosen plane
@@ -154,8 +155,8 @@ loaders:
     # data augmentation
     transformer:
       raw:
-        # - name: PercentileNormalizer
-        #   channelwise: true
+        - name: PercentileNormalizer
+          channelwise: true
         - name: ToTensor
           expand_dims: true
       # label:

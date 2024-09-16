@@ -1,5 +1,5 @@
 # path to the checkpoint file containing the model
-model_path: /model/ckpt/fdg_pib_res3dunet_wo_norm.pytorch  # fdg_pib_finetune_w_dropout.pytorch # /model/ckpt/fdg_pib_frozen_resnet.pytorch
+model_path: /model/ckpt/last_checkpoint.pytorch  # fdg_pib_finetune_w_dropout.pytorch # /model/ckpt/fdg_pib_frozen_resnet.pytorch
 # model configuration
 model:
   # model class
@@ -13,7 +13,8 @@ model:
   # feature maps scale factor
   f_maps: [ 32, 64, 128, 256 ]
   # number of groups in the groupnorm
-  # num_groups: 8
+  num_groups: 8
+  dropout_prob: 0.3
   # apply element-wise nn.Sigmoid after the final 1x1 convolution, otherwise apply nn.Softmax
   final_sigmoid: false
   # if True applies the final normalization layer (sigmoid or softmax), otherwise the networks returns the output from the final convolution layer; use False for regression problems, e.g. de-noising
@@ -54,7 +55,7 @@ loaders:
 
     transformer:
       raw:
-        # - name: PercentileNormalizer
-        #   channelwise: true
+        - name: PercentileNormalizer
+          channelwise: true
         - name: ToTensor
           expand_dims: true

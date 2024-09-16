@@ -1,5 +1,5 @@
 # path to the checkpoint file containing the model
-model_path: /model/ckpt/fdg_pib_res3dunet_wo_norm.pytorch  # fdg_pib_finetune_w_dropout.pytorch # /model/ckpt/fdg_pib_frozen_resnet.pytorch
+model_path: /model/ckpt/fdg_pib_r3d_p_norm.pytorch  # fdg_pib_finetune_w_dropout.pytorch # /model/ckpt/fdg_pib_frozen_resnet.pytorch
 # model configuration
 model:
   # model class
@@ -54,7 +54,7 @@ loaders:
 
     transformer:
       raw:
-        # - name: PercentileNormalizer
-        #   channelwise: true
+        - name: PercentileNormalizer
+          channelwise: true
         - name: ToTensor
           expand_dims: true

@@ -545,7 +545,7 @@ class PercentileNormalizer:
         else:
             pmin = np.percentile(m, self.pmin)
             pmax = np.percentile(m, self.pmax)
-        return (m - pmin) / (pmax - pmin + self.eps)
+        return np.clip((m - pmin) / (pmax - pmin + self.eps), 0, 1)
 
 class Normalize:
     """

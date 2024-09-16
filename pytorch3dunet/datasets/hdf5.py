@@ -67,8 +67,8 @@ class AbstractHDF5Dataset(ConfigDataset):
         self.weight_internal_path = weight_internal_path
         self.halo_shape = slice_builder_config.get('halo_shape', [0, 0, 0])
         with h5py.File(file_path, 'r') as f:
-            raw = np.array(f[raw_internal_path][:])
-            self.data = raw[:, self.feature_idx, :].transpose((0, 1, 3, 4, 2))
+            raw = np.array(f[raw_internal_path][:, self.feature_idx, :])
+            self.data = raw.transpose((0, 1, 3, 4, 2))
 
         with h5py.File(file_path, 'r') as f:
             self.label = f[label_internal_path][:] # if phase != 'test' else None

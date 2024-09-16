@@ -45,7 +45,7 @@ loss:
 optimizer:
   name: Adamax # SGD
   # initial learning rate
-  learning_rate: 0.005
+  learning_rate: 0.004
   # weight decay
   weight_decay: 0.002
 # evaluation metric
@@ -102,8 +102,8 @@ loaders:
         # Z-norm to standardize: subtract mean and divide by std dev
         # - name: ZNorm
         # Minmax to standardize: subtract min and divide by (max - min)
-        # - name: PercentileNormalizer
-        #   channelwise: true
+        - name: PercentileNormalizer
+          channelwise: true
         # randomly flips the volume in one of the axis
         # - name: RandomFlip
         # randomly rotates the volume with 90 deg across a randomly chosen plane
@@ -154,8 +154,8 @@ loaders:
     # data augmentation
     transformer:
       raw:
-        # - name: PercentileNormalizer
-        #   channelwise: true
+        - name: PercentileNormalizer
+          channelwise: true
         - name: ToTensor
           expand_dims: true
       # label:
