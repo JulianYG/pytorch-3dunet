@@ -53,9 +53,13 @@ class ACC:
         pass
 
     def __call__(self, input, target):
-        target = target.cpu().data.numpy().argmax(1)
-        prediction = input.cpu().data.numpy().argmax(1)
-        return torch.mean(torch.tensor(accuracy_score(y_true=target, y_pred=prediction)))
+        print('input: ', input)
+        print('target: ', target)
+        target = torch.argmax(target, 1)
+        prediction = torch.argmax(input, 1) 
+        res = torch.tensor(accuracy_score(
+            y_true=target.cpu().data.numpy(), y_pred=prediction.cpu().data.numpy()))
+        return res
 
 
 class MeanIoU:

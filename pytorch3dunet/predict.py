@@ -5,10 +5,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from pytorch3dunet.datasets.utils import get_test_loaders
+from pytorch3dunet.datasets.utils import get_test_loaders, get_train_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.config import load_config
 from pytorch3dunet.unet3d.model import get_model
+from sklearn.metrics import confusion_matrix
 
 logger = utils.get_logger('UNet3DPredict')
 
@@ -50,16 +51,21 @@ def main():
 
     # create predictor instance
     predictor = get_predictor(model, config)
+    # import pdb
+    # val_loader = get_train_loaders(config)['val']
+    # t_loader = next(get_test_loaders(config))
+    # pdb.set_trace()
 
     for test_loader in get_test_loaders(config):
         # run the model prediction on the test_loader and save the results in the output_dir
         predictor(test_loader)
 
-    truth = np.array(predictor.ground_truth)
-    pred = np.array(predictor.predicted_label)
+    truth = np.argmax(np.array(predictor.ground_truth), 1)
+    pred = np.argmax(np.array(predictor.predicted_label), 1)
 
-    print('ground truth', np.argmax(truth, 1))
-    print('predicted', np.argmax(pred, 1))
+    print('ground truth', truth)
+    print('predicted', pred)
+    print('confusion matrix', confusion_matrix(truth, pred))
 
 if __name__ == '__main__':
     main()

@@ -133,6 +133,7 @@ class StandardPredictor(_AbstractPredictor):
                     # prediction = remove_padding(prediction, patch_halo)
                     # convert to numpy array
                     prediction = prediction.cpu().numpy()
+
                     # for each batch sample
                     for pred, index in zip(prediction, ground_truth):
                         # # save patch index: (C,D,H,W)

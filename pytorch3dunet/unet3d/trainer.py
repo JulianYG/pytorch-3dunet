@@ -282,6 +282,10 @@ class UNetTrainer:
                     self._log_images(input, target, output, 'val_')
 
                 eval_score = self.eval_criterion(output, target)
+                # print('----output below----')
+                # print(output)
+                # print('----target below----')
+                # print(target)
                 val_scores.update(eval_score.item(), self._batch_size(input))
 
                 if self.validate_iters is not None and self.validate_iters <= i:
@@ -320,7 +324,6 @@ class UNetTrainer:
         else:
             # forward pass
             output = self.model(input)
-
         # compute the loss
         if weight is None:
             loss = self.loss_criterion(output, target)

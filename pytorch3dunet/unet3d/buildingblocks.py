@@ -249,6 +249,23 @@ class ResNetBlockSE(ResNetBlock):
         return out
 
 
+class ClassificationHead(nn.Module):
+   '''
+   A linear classifier is used to classify the encoded input based on the MLP 
+   head: ZKcls ∈ R(d). There are two final categorization classes: NC and AD.
+   The first token (cls_token) from the sequence is used for classification.
+   '''
+   def __init__(self, emb_size: int = 256, n_classes: int = 2):
+       super().__init__()
+       self.linear = nn.Linear(emb_size, n_classes)
+       
+   def forward(self, x):
+       # As x is of shape [batch_size, num_tokens, emb_size]
+       # and the cls_token is the first token in the sequence
+       cls_token = x[:, 0]
+       return self.linear(cls_token)
+
+
 class Encoder(nn.Module):
     """
     A single module from the encoder path consisting of the optional max
@@ -275,7 +292,7 @@ class Encoder(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, conv_kernel_size=3, apply_pooling=True,
-                 pool_kernel_size=2, pool_type='max', basic_module=DoubleConv, conv_layer_order='gcr',
+                 pool_kernel_size=2, pool_type='avg', basic_module=DoubleConv, conv_layer_order='gcr',
                  num_groups=8, padding=1, upscale=2, dropout_prob=0.1, is3d=True):
         super(Encoder, self).__init__()
         assert pool_type in ['max', 'avg']
